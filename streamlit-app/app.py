@@ -47,12 +47,17 @@ if st.button("Calculate Emissions"):
     st.subheader("Emission Breakdown")
 
     product_weight_kg = product_weight_grams / 1000
-    ingredient_emissions = 0.0
-    for _, row in ingredient_df.iterrows():
-        try:
-            ingredient_emissions += (row["Percentage"] / 100) * product_weight_kg * row["Emission Factor (g CO₂-eq/kg)"]
-        except:
-            continue
+
+    # Convert table values to numeric
+    ingredient_df["Percentage"] = pd.to_numeric(ingredient_df["Percentage"], errors="coerce").fillna(0)
+    ingredient_df["Emission Factor (g CO₂-eq/kg)"] = pd.to_numeric(
+        ingredient_df["Emission Factor (g CO₂-eq/kg)"], errors="coerce"
+    ).fillna(0)
+
+    # Calculate emissions
+    ingredient_emissions = (
+        (ingredient_df["Percentage"] / 100) * product_weight_kg * ingredient_df["Emission Factor (g CO₂-eq/kg)"]
+    ).sum()
 
     packaging_emissions = packaging_weight * packaging_emission_factor
     manufacturing_emissions = energy_used * energy_emission_factor
